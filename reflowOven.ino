@@ -39,14 +39,19 @@ LiquidTWI2 lcd(0);
 /*
       State    Menus                 Description
           0    Tune | Show | Run     Initial IDLE State
-        100         |      | Go      TUNE State
-      10000         |      | STOP    Run State
+        100    Back | Set  | Go      TUNE State
+        200     -   |  +   | Done    TUNE_SET state
+      10000         |      | QUIT    Tuning State
+      20000         |      | STOP    Running State
 */
 
 int state = 0;
 #define IDLE_STATE 0
 #define TUNE_STATE 100
-#define RUN_STATE 10000
+#define TUNE_SET_STATE  200
+#define TUNE_END_STATE 999
+#define TUNE_RUN_STATE 10000
+#define RUN_STATE 20000
 #include "menus.h"
 
 const int Vref = 5;
@@ -74,6 +79,12 @@ bool button3Pressed = false;
 #include <PinChangeInt.h>
 #include "buttons.h"
 
+void clearAllButtons() {
+  button1Pressed = false;
+  button2Pressed = false;
+  button3Pressed = false;
+}
+
 
 // When to update display
 const int printInterval = 250;
@@ -81,6 +92,9 @@ long nextPrint = 0;
 
 // LCD helper functions
 #include "lcdFuncs.h"
+
+// Tuning helper functions
+#include "tune.h"
 
 void setup()
 {
@@ -152,14 +166,8 @@ void loop()
     }
   }
 
-  if ( state == TUNE_STATE ) {
-    // Check for buttons first
-    if ( button1Pressed ) {
-      button1Pressed = false;
-      state = IDLE_STATE;
-      displayState(state);
-      return;
-    }
+  if ( state >= TUNE_STATE && state < TUNE_END_STATE ) {
+    processTuneState();
   }
 
   /************************************************

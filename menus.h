@@ -13,16 +13,27 @@ void displayState(int state) {
       lcd.print(F("IDLE      "));
       // IDLE Menus
       lcd.setCursor(0,1);
-      lcd.print("Tune  Show   Run");
+      lcd.print(F("Tune  Show   Run"));
       break;
 
     case TUNE_STATE:
       // TUNE state
       lcd.setCursor(0,0);
       lcd.print(F("TUNE      "));
-      // IDLE Menus
+      // TUNE Menus
       lcd.setCursor(0,1);
-      lcd.print("Back          Go");
+      lcd.print(F("Back  Set     Go"));
+      break;
+
+    case TUNE_SET_STATE:
+      // TUNE state
+      lcd.setCursor(0,0);
+      lcd.print(F("Setpt:    "));
+      lcd.setCursor(7,0);
+      lcd.print(int(Setpoint));
+      // TUNE Target Menus
+      lcd.setCursor(0,1);
+      lcd.print(F(" -    +     Done"));
       break;
 
     case RUN_STATE:
@@ -31,7 +42,7 @@ void displayState(int state) {
       lcd.print(F("PRE-HEAT  "));
       // IDLE Menus
       lcd.setCursor(0,1);
-      lcd.print("            STOP");
+      lcd.print(F("            STOP"));
       break;
 
     default:
@@ -40,6 +51,6 @@ void displayState(int state) {
       lcd.print(F("Unknown!  "));
       // IDLE Menus
       lcd.setCursor(0,1);
-      lcd.print("Arse  Arse  Arse");
+      lcd.print(F("Arse  Arse  Arse"));
   }
 }
