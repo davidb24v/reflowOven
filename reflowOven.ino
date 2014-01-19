@@ -20,9 +20,32 @@
 
 //Define Variables we'll be connecting to
 double Setpoint, Input, Output;
+byte ATuneModeRemember=0;
+double outputStart=2500;
+double aTuneStep=2500, aTuneNoise=1, aTuneStartValue=2500;
+unsigned int aTuneLookBack=30;
 
-//Specify the links and initial tuning parameters
-PID myPID(&Input, &Output, &Setpoint, 300, 0.05, 250, DIRECT);
+//Specify the initial tuning parameters
+// Dunno where these came from
+/*
+double kp = 300.0;
+double ki = 0.05;
+double kd = 0.1;
+*/
+
+/*
+Another tuning run:
+double kp = 118.53;
+double ki = 1.76;
+double kd = 0.0;
+*/
+
+// From tuning run:
+double kp = 200.0;
+double ki = 11.48;
+double kd = 0.0;
+
+PID myPID(&Input, &Output, &Setpoint, kp, ki, kd, DIRECT);
 PID_ATune aTune(&Input, &Output);
 
 int WindowSize = 5000;
@@ -57,16 +80,17 @@ int state = 0;
 const int Vref = 5;
 
 // LEDs
-const int redLed=13;
-const int yellowLed=12;
-const int greenLed=11;
+const int redLed = 13;
+const int yellowLed = 12;
+const int greenLed = 11;
 
 // Buttons
-const int Button1=8;
-const int Button2=9;
-const int Button3=10;
+const int Button1 = 8;
+const int Button2 = 9;
+const int Button3 = 10;
 
-// Flags to indicate button pressed (actually, it indicates "released", not "pressed" but who cares?)
+// Flags to indicate button pressed (actually, it indicates
+// "released", not "pressed" but who cares?)
 bool button1Pressed = false;
 bool button2Pressed = false;
 bool button3Pressed = false;
@@ -79,22 +103,30 @@ bool button3Pressed = false;
 #include <PinChangeInt.h>
 #include "buttons.h"
 
-void clearAllButtons() {
-  button1Pressed = false;
-  button2Pressed = false;
-  button3Pressed = false;
-}
-
-
 // When to update display
-const int printInterval = 250;
+const int printInterval = 500;
 long nextPrint = 0;
 
 // LCD helper functions
 #include "lcdFuncs.h"
 
 // Tuning helper functions
+bool tuning = false;
 #include "tune.h"
+
+void processOutput() {
+  if (millis() - windowStartTime>WindowSize) {
+    //time to shift the Relay Window
+    windowStartTime += WindowSize;
+  }
+  if (Output > (millis() - windowStartTime) ) {
+    digitalWrite(RelayPin,HIGH);
+    digitalWrite(redLed, HIGH);
+  } else {
+    digitalWrite(RelayPin,LOW);
+    digitalWrite(redLed, LOW);
+  }
+}
 
 void setup()
 {
@@ -119,7 +151,7 @@ void setup()
   myPID.SetOutputLimits(0, WindowSize);
 
   //turn the PID on
-  myPID.SetMode(MANUAL);
+  myPID.SetMode(AUTOMATIC);
 
   // Analogue 0 connects to the thermocouple amplifier
   Serial.begin(115200);
@@ -136,6 +168,9 @@ void setup()
 
 double degC() {
   int val = analogRead(A0);
+  delay(10);
+  val = analogRead(A0);
+  delay(10);
   // Apply reference voltage, scale to 10mV (== degC) and
   // divide out the analogue range (1024)
   double temp = (val * Vref * 100.0) / 1024.0;
@@ -166,7 +201,7 @@ void loop()
     }
   }
 
-  if ( state >= TUNE_STATE && state < TUNE_END_STATE ) {
+  if ( state >= TUNE_STATE && state <= TUNE_RUN_STATE ) {
     processTuneState();
   }
 
@@ -175,17 +210,7 @@ void loop()
    ************************************************/
   if ( state >= RUN_STATE ) {
     myPID.Compute();
-    if (millis() - windowStartTime>WindowSize) {
-      //time to shift the Relay Window
-      windowStartTime += WindowSize;
-    }
-    if (Output > (millis() - windowStartTime) ) {
-      digitalWrite(RelayPin,HIGH);
-      digitalWrite(redLed, HIGH);
-    } else {
-      digitalWrite(RelayPin,LOW);
-      digitalWrite(redLed, LOW);
-    }
+    processOutput();
   }
 }
 

@@ -3,7 +3,7 @@ void lcdSetup() {
   lcd.setMCPType(LTI_TYPE_MCP23008);
 
   // Set I2C Bus Bit Rate to 400kHz
-  TWBR = 12;
+  //TWBR = 12;
 
   // set up the LCD's number of rows and columns:
   lcd.begin(16, 2);

@@ -36,6 +36,17 @@ void displayState(int state) {
       lcd.print(F(" -    +     Done"));
       break;
 
+    case TUNE_RUN_STATE:
+      // TUNE state
+      lcd.setCursor(0,0);
+      lcd.print(F("Tuning... "));
+      lcd.setCursor(7,0);
+      lcd.print(int(Setpoint));
+      // TUNE Target Menus
+      lcd.setCursor(0,1);
+      lcd.print(F("            Quit"));
+      break;
+
     case RUN_STATE:
       // Basic RUN state
       lcd.setCursor(0,0);

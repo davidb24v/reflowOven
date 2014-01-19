@@ -14,3 +14,9 @@ void buttonSetup() {
   PCintPort::attachInterrupt(Button3, &button3Press, FALLING);
 }
 
+void clearAllButtons() {
+  button1Pressed = false;
+  button2Pressed = false;
+  button3Pressed = false;
+}
+
