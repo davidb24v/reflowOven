@@ -75,6 +75,7 @@ int state = 0;
 #define TUNE_END_STATE 999
 #define TUNE_RUN_STATE 10000
 #define RUN_STATE 20000
+#define DONE_STATE 30000
 #include "menus.h"
 
 const int Vref = 5;
@@ -83,6 +84,8 @@ const int Vref = 5;
 const int redLed = 13;
 const int yellowLed = 12;
 const int greenLed = 11;
+int yellowState = 0;
+unsigned long nextYellowEvent = 0;
 
 // Buttons
 const int Button1 = 8;
@@ -145,7 +148,7 @@ void setup()
   windowStartTime = millis();
   
   //initialize the variables we're linked to
-  Setpoint = 150;
+  Setpoint = 240;
 
   //tell the PID to range between 0 and the full window size
   myPID.SetOutputLimits(0, WindowSize);
@@ -199,10 +202,32 @@ void loop()
       displayState(state);
       return;
     }
+    if ( button3Pressed ) {
+      button3Pressed = false;
+      state = RUN_STATE;
+      digitalWrite(RelayPin, HIGH);
+      digitalWrite(yellowLed, HIGH);
+      yellowState = HIGH;
+      displayState(state);
+      return;
+    }
   }
 
   if ( state >= TUNE_STATE && state <= TUNE_RUN_STATE ) {
     processTuneState();
+  }
+
+  if ( state == DONE_STATE ) {
+    if ( now >= nextYellowEvent ) {
+      if ( yellowState ) {
+        nextYellowEvent += 250;
+      } else {
+        nextYellowEvent += 50;
+      }
+      yellowState = 1-yellowState;
+      digitalWrite(yellowLed, yellowState);
+    }
+    return;
   }
 
   /************************************************
@@ -211,6 +236,15 @@ void loop()
   if ( state >= RUN_STATE ) {
     myPID.Compute();
     processOutput();
+    if ( button3Pressed | (degC() >= Setpoint-5)) {
+      button3Pressed = false;
+      // Switch off the oven
+      digitalWrite(RelayPin, LOW);
+      digitalWrite(redLed, LOW);
+      state = DONE_STATE;
+      displayState(state);
+      return;
+    }
   }
 }
 

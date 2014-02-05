@@ -50,10 +50,19 @@ void displayState(int state) {
     case RUN_STATE:
       // Basic RUN state
       lcd.setCursor(0,0);
-      lcd.print(F("PRE-HEAT  "));
-      // IDLE Menus
+      lcd.print(F("Reflow... "));
+      // Run Menus
       lcd.setCursor(0,1);
       lcd.print(F("            STOP"));
+      break;
+
+    case DONE_STATE:
+      // Basic RUN state
+      lcd.setCursor(0,0);
+      lcd.print(F("Open Door!"));
+      // Run Menus
+      lcd.setCursor(0,1);
+      lcd.print(F("                "));
       break;
 
     default:
