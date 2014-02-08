@@ -62,6 +62,15 @@ void displayState(int state) {
       lcd.print(F("Open Door!"));
       // Run Menus
       lcd.setCursor(0,1);
+      lcd.print(F("Ok!             "));
+      break;
+
+    case WELL_DONE_STATE:
+      // Basic RUN state
+      lcd.setCursor(0,0);
+      lcd.print(F("Cooling   "));
+      // Run Menus
+      lcd.setCursor(0,1);
       lcd.print(F("                "));
       break;
 

@@ -76,6 +76,7 @@ int state = 0;
 #define TUNE_RUN_STATE 10000
 #define RUN_STATE 20000
 #define DONE_STATE 30000
+#define WELL_DONE_STATE 40000
 #include "menus.h"
 
 const int Vref = 5;
@@ -218,15 +219,27 @@ void loop()
   }
 
   if ( state == DONE_STATE ) {
+    if ( button1Pressed ) {
+      button1Pressed = false;
+      state = WELL_DONE_STATE;
+      displayState(state);
+      return;
+    }
     if ( now >= nextYellowEvent ) {
       if ( yellowState ) {
-        nextYellowEvent += 250;
+        nextYellowEvent = now+250;
       } else {
-        nextYellowEvent += 50;
+        nextYellowEvent = now+50;
       }
       yellowState = 1-yellowState;
       digitalWrite(yellowLed, yellowState);
     }
+    return;
+  }
+
+  if ( state == WELL_DONE_STATE ) {
+    displayState(state);
+    delay(500);
     return;
   }
 
@@ -242,6 +255,9 @@ void loop()
       digitalWrite(RelayPin, LOW);
       digitalWrite(redLed, LOW);
       state = DONE_STATE;
+      nextYellowEvent = now+250;
+      yellowState = 1;
+      digitalWrite(yellowLed, yellowState);
       displayState(state);
       return;
     }
